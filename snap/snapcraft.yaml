@@ -46,7 +46,7 @@ environment:
 apps:
   dosbox-staging:
     command: desktop-launch dosbox
-    plugs: [home, pulseaudio, desktop, desktop-legacy, wayland, x11, opengl]
+    plugs: [home, pulseaudio, desktop, desktop-legacy, wayland, x11, opengl, removable-media]
 
 parts:
   dosbox-staging:
