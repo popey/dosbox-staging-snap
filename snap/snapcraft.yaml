@@ -24,7 +24,7 @@ base: core18
 apps:
   dosbox-staging:
     command: desktop-launch dosbox
-    plugs: [audio-playback, home, pulseaudio, desktop, desktop-legacy, wayland, x11, opengl, removable-media]
+    plugs: [audio-playback, home, pulseaudio, desktop, desktop-legacy, wayland, x11, opengl, removable-media, joystick]
     extensions: [gnome-3-28]
 
 parts:
