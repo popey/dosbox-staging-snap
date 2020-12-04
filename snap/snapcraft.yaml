@@ -36,6 +36,7 @@ apps:
 parts:
   dosbox-staging:
     plugin: autotools
+    configflags: [--disable-fluidsynth]
     source: https://github.com/dosbox-staging/dosbox-staging.git
     override-pull: |
       snapcraftctl pull
