@@ -19,24 +19,34 @@ description: |
 
 grade: stable
 confinement: strict
-base: core18
+base: core20
 
 architectures:
-  - build-on: i386
   - build-on: amd64
   - build-on: arm64
   - build-on: armhf
 
 apps:
   dosbox-staging:
-    command: desktop-launch dosbox
-    plugs: [audio-playback, home, pulseaudio, desktop, desktop-legacy, wayland, x11, opengl, removable-media, joystick]
-    extensions: [gnome-3-28]
+    command: usr/local/bin/dosbox
+    plugs: [audio-playback, home, audio-playback, audio-record, desktop, desktop-legacy, wayland, x11, opengl, removable-media, joystick]
+    extensions: [gnome-3-38]
+    environment: 
+      LD_LIBRARY_PATH: $SNAP/usr/local/lib
 
 parts:
+  fluidsynth:
+    source: https://github.com/FluidSynth/fluidsynth.git
+    plugin: cmake
+    source-tag: "v2.2.5"
+  mt:
+    source: https://github.com/munt/munt.git
+    plugin: cmake
+    source-subdir: "mt32emu"
+
   dosbox-staging:
-    plugin: autotools
-    configflags: [--disable-fluidsynth]
+    after: [mt, fluidsynth]
+    plugin: meson
     source: https://github.com/dosbox-staging/dosbox-staging.git
     override-pull: |
       snapcraftctl pull
@@ -57,20 +67,24 @@ parts:
       fi
     build-packages:
       - libsdl2-dev
-      #- libsdl-sound1.2-dev
-      #- libasound2-dev
       - libopus-dev
       - libopusfile-dev
+      - cmake
+      - build-essential
+      - libsdl2-net-dev
+      - libslirp-dev
+      - pkg-config
     stage-packages:
       - libsdl2-2.0-0
-      #- libsdl-net1.2
-      #- libsdl-sound1.2
-      #- libasound2
       - libslang2
       - libglu1-mesa
       - libopusfile0
       - freeglut3
+      - fluidsynth
+      - libsdl2-net-2.0-0
     organize:
+      usr/local/lib/*/lib*.so*: usr/lib/
+      usr/local/lib/lib*.so*: usr/lib/
       usr/lib/*/libpulse.so.*: usr/lib/
       usr/lib/*/pulseaudio/libpulsecommon*: usr/lib/
     prime:
@@ -83,11 +97,11 @@ parts:
     after: [dosbox-staging]
     plugin: nil
     build-snaps:
-      - core18
+      - core20
       - gtk-common-themes
-      - gnome-3-28-1804
+      - gnome-3-38-2004
     override-prime: |
       set -eux
-      for snap in "core18" "gtk-common-themes" "gnome-3-28-1804"; do
+      for snap in "core20" "gtk-common-themes" "gnome-3-38-2004"; do
         cd "/snap/$snap/current" && find . -type f,l -exec rm -r "$SNAPCRAFT_PRIME/{}" \;
       done
