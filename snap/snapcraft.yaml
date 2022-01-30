@@ -31,8 +31,8 @@ apps:
     command: usr/local/bin/dosbox
     plugs: [audio-playback, home, audio-record, desktop, desktop-legacy, wayland, x11, opengl, removable-media, joystick]
     extensions: [gnome-3-38]
-    # environment: 
-    #   LD_LIBRARY_PATH: $SNAP/usr/local/lib
+    environment: 
+      HOME: $SNAP_REAL_HOME
 
 parts:
   fluidsynth:
