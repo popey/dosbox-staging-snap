@@ -70,6 +70,7 @@ parts:
       fi
     build-packages:
       - libsdl2-dev
+      - libsdl2-image-dev
       - libopus-dev
       - libopusfile-dev
       - cmake
