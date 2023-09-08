@@ -19,7 +19,7 @@ description: |
 
 grade: stable
 confinement: strict
-base: core20
+base: core22
 
 architectures:
   - build-on: amd64
@@ -28,27 +28,14 @@ architectures:
 
 apps:
   dosbox-staging:
-    command: usr/local/bin/dosbox
+    command: usr/bin/dosbox
     plugs: [audio-playback, home, audio-record, desktop, desktop-legacy, wayland, x11, opengl, removable-media, joystick]
-    extensions: [gnome-3-38]
+    extensions: [gnome]
     environment: 
       HOME: $SNAP_REAL_HOME
 
 parts:
-  fluidsynth:
-    source: https://github.com/FluidSynth/fluidsynth.git
-    plugin: cmake
-    source-tag: "v2.2.5"
-    organize:
-      usr/local/lib64/lib*.so*: usr/lib/
-  mt:
-    source: https://github.com/munt/munt.git
-    plugin: cmake
-    source-subdir: "mt32emu"
-    organize:
-      usr/local/lib/lib*.so*: usr/lib/
   dosbox-staging:
-    after: [mt, fluidsynth]
     plugin: meson
     source: https://github.com/dosbox-staging/dosbox-staging.git
     override-pull: |
@@ -86,11 +73,11 @@ parts:
       - freeglut3
       - fluidsynth
       - libsdl2-net-2.0-0
-    organize:
-      usr/local/lib/*/lib*.so*: usr/lib/
-      usr/local/lib/lib*.so*: usr/lib/
-      usr/lib/*/libpulse.so.*: usr/lib/
-      usr/lib/*/pulseaudio/libpulsecommon*: usr/lib/
+    # organize:
+    #   usr/local/lib/*/lib*.so*: usr/lib/
+    #   usr/local/lib/lib*.so*: usr/lib/
+    #   usr/lib/*/libpulse.so.*: usr/lib/
+    #   usr/lib/*/pulseaudio/libpulsecommon*: usr/lib/
     prime:
       - -share
       - -usr/share/doc
