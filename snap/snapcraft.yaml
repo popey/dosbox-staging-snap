@@ -28,33 +28,46 @@ architectures:
 
 apps:
   dosbox-staging:
-    command: usr/bin/dosbox
+    command: usr/local/bin/dosbox
     plugs: [audio-playback, home, audio-record, desktop, desktop-legacy, wayland, x11, opengl, removable-media, joystick]
     extensions: [gnome]
     environment: 
       HOME: $SNAP_REAL_HOME
 
 parts:
+  fluidsynth:
+    source: https://github.com/FluidSynth/fluidsynth.git
+    plugin: cmake
+    source-tag: "v2.3.1"
+    organize:
+      usr/local/lib64/lib*.so*: usr/lib/
+  mt:
+    source: https://github.com/munt/munt.git
+    plugin: cmake
+    source-subdir: "mt32emu"
+    organize:
+      usr/local/lib/lib*.so*: usr/lib/
   dosbox-staging:
+    after: [mt, fluidsynth]
     plugin: meson
     source: https://github.com/dosbox-staging/dosbox-staging.git
     override-pull: |
       snapcraftctl pull
       last_committed_tag="$(git describe --tags `git rev-list --tags --max-count=1`)"
       echo $last_committed_tag
-      last_released_tag=v"$(snap info $SNAPCRAFT_PROJECT_NAME | awk '$1 == "latest/beta:" { print $2 }')"
-      echo $last_released_tag
+      ##last_released_tag=v"$(snap info $CRAFT_PROJECT_NAME | awk '$1 == "latest/beta:" { print $2 }')"
+      ##echo $last_released_tag
       # If the latest tag from the upstream project has not been released to
       # beta, build that tag instead of master.
-      if [ "${last_committed_tag}" != "${last_released_tag}" ]; then
+      ##if [ "${last_committed_tag}" != "${last_released_tag}" ]; then
         git fetch
         git checkout "${last_committed_tag}"
         echo "Setting version to $last_committed_tag"
         snapcraftctl set-version "$(echo $last_committed_tag | tr -d 'v')"
-      else
-        echo "Setting version to $(git rev-parse --short HEAD)"
-        snapcraftctl set-version "$(git rev-parse --short HEAD)"
-      fi
+      ##else
+        ##echo "Setting version to $(git rev-parse --short HEAD)"
+        ##snapcraftctl set-version "$(git rev-parse --short HEAD)"
+      ##fi
     build-packages:
       - libsdl2-dev
       - libsdl2-image-dev
@@ -65,34 +78,33 @@ parts:
       - libsdl2-net-dev
       - libslirp-dev
       - pkg-config
+      - meson
+      - libpng-dev
     stage-packages:
       - libsdl2-2.0-0
+      - libsdl2-image-2.0-0
+      - libslirp0
       - libslang2
       - libglu1-mesa
       - libopusfile0
       - freeglut3
       - fluidsynth
       - libsdl2-net-2.0-0
-    # organize:
-    #   usr/local/lib/*/lib*.so*: usr/lib/
-    #   usr/local/lib/lib*.so*: usr/lib/
-    #   usr/lib/*/libpulse.so.*: usr/lib/
-    #   usr/lib/*/pulseaudio/libpulsecommon*: usr/lib/
+    organize:
+      usr/local/lib/*/lib*.so*: usr/lib/
+      usr/local/lib/lib*.so*: usr/lib/
+      usr/lib/*/libpulse.so.*: usr/lib/
+      usr/lib/*/pulseaudio/libpulsecommon*: usr/lib/
     prime:
       - -share
       - -usr/share/doc
       - -usr/share/lintian
       - -usr/share/man
-
-  # cleanup:
-  #   after: [dosbox-staging]
-  #   plugin: nil
-  #   build-snaps:
-  #     - core20
-  #     - gtk-common-themes
-  #     - gnome-3-38-2004
-  #   override-prime: |
-  #     set -eux
-  #     for snap in "core20" "gtk-common-themes" "gnome-3-38-2004"; do
-  #       cd "/snap/$snap/current" && find . -type f,l -exec rm -r "$SNAPCRAFT_PRIME/{}" \;
-  #     done
+  cleanup:
+    after: [fluidsynth, mt, dosbox-staging]
+    plugin: nil
+    build-snaps: [ gnome-42-2204 ]
+    override-prime: |
+      set -eux
+      cd /snap/gnome-42-2204/current
+      find . -type f,l -exec rm -f $CRAFT_PRIME/{} \;
