@@ -63,7 +63,7 @@ parts:
         git fetch
         git checkout "${last_committed_tag}"
         echo "Setting version to $last_committed_tag"
-        snapcraftctl set-version "$(echo $last_committed_tag | tr -d 'v')"
+        snapcraftctl set-version "$(echo $last_committed_tag)"
       ##else
         ##echo "Setting version to $(git rev-parse --short HEAD)"
         ##snapcraftctl set-version "$(git rev-parse --short HEAD)"
