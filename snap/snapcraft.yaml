@@ -1,5 +1,5 @@
 name: dosbox-staging
-adopt-info: dosbox-staging
+version: 0.81.2
 summary: Open Source PC/MS-DOS emulator
 description: |
   DOSBox is a DOS-emulator that uses the SDL-library which 
@@ -50,24 +50,7 @@ parts:
   dosbox-staging:
     after: [mt, fluidsynth]
     plugin: meson
-    source: https://github.com/dosbox-staging/dosbox-staging.git
-    override-pull: |
-      snapcraftctl pull
-      last_committed_tag="$(git describe --tags `git rev-list --tags --max-count=1`)"
-      echo $last_committed_tag
-      ##last_released_tag=v"$(snap info $CRAFT_PROJECT_NAME | awk '$1 == "latest/beta:" { print $2 }')"
-      ##echo $last_released_tag
-      # If the latest tag from the upstream project has not been released to
-      # beta, build that tag instead of master.
-      ##if [ "${last_committed_tag}" != "${last_released_tag}" ]; then
-        git fetch
-        git checkout "${last_committed_tag}"
-        echo "Setting version to $last_committed_tag"
-        snapcraftctl set-version "$(echo $last_committed_tag)"
-      ##else
-        ##echo "Setting version to $(git rev-parse --short HEAD)"
-        ##snapcraftctl set-version "$(git rev-parse --short HEAD)"
-      ##fi
+    source: https://github.com/dosbox-staging/dosbox-staging/archive/refs/tags/v$SNAPCRAFT_PROJECT_VERSION.tar.gz
     build-packages:
       - libsdl2-dev
       - libsdl2-image-dev
