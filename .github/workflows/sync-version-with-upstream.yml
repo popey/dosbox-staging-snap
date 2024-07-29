@@ -21,7 +21,7 @@ jobs:
         uses: snapcrafters/ci/sync-version@main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          branch: main
+          branch: master
           bot-email: alan@popey.com
           bot-name: popeybot
           update-script: |
