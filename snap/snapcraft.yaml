@@ -1,5 +1,5 @@
 name: dosbox-staging
-version: 0.82.0-rc1
+version: 0.82.0
 summary: Open Source PC/MS-DOS emulator
 description: |
   DOSBox is a DOS-emulator that uses the SDL-library which 
