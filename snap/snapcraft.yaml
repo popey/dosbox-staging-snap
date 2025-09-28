@@ -29,7 +29,7 @@ architectures:
 apps:
   dosbox-staging:
     command: usr/local/bin/dosbox
-    plugs: [audio-playback, home, audio-record, desktop, desktop-legacy, wayland, x11, opengl, removable-media, joystick, network]
+    plugs: [audio-playback, home, audio-record, desktop, desktop-legacy, wayland, x11, opengl, removable-media, joystick, network, network-bind]
     extensions: [gnome]
     environment: 
       HOME: $SNAP_REAL_HOME
