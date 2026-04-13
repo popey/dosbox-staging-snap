@@ -19,12 +19,11 @@ description: |
 
 grade: stable
 confinement: strict
-base: core22
+base: core24
 
-architectures:
-  - build-on: amd64
-  - build-on: arm64
-  - build-on: armhf
+platforms:
+  amd64:
+  arm64:
 
 apps:
   dosbox-staging:
@@ -38,13 +37,14 @@ parts:
   fluidsynth:
     source: https://github.com/FluidSynth/fluidsynth.git
     plugin: cmake
-    source-tag: "v2.3.1"
+    source-tag: "v2.5.3"
     organize:
       usr/local/lib64/lib*.so*: usr/lib/
   mt:
     source: https://github.com/munt/munt.git
     plugin: cmake
     source-subdir: "mt32emu"
+    source-tag: "munt_2_7_0"
     organize:
       usr/local/lib/lib*.so*: usr/lib/
   dosbox-staging:
@@ -70,7 +70,7 @@ parts:
       - libslang2
       - libglu1-mesa
       - libopusfile0
-      - freeglut3
+      - libglut3.12
       - fluidsynth
       - libsdl2-net-2.0-0
     organize:
@@ -86,8 +86,8 @@ parts:
   cleanup:
     after: [fluidsynth, mt, dosbox-staging]
     plugin: nil
-    build-snaps: [ gnome-42-2204 ]
+    build-snaps: [ gnome-46-2404 ]
     override-prime: |
       set -eux
-      cd /snap/gnome-42-2204/current
+      cd /snap/gnome-46-2404/current
       find . -type f,l -exec rm -f $CRAFT_PRIME/{} \;
