@@ -52,6 +52,7 @@ parts:
     plugin: meson
     meson-parameters:
       - -Db_pie=false
+      - -Ddynamic_core=none
     source: https://github.com/dosbox-staging/dosbox-staging/archive/refs/tags/v$SNAPCRAFT_PROJECT_VERSION.tar.gz
     build-packages:
       - libsdl2-dev
