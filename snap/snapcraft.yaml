@@ -50,6 +50,8 @@ parts:
   dosbox-staging:
     after: [mt, fluidsynth]
     plugin: meson
+    meson-parameters:
+      - -Db_pie=false
     source: https://github.com/dosbox-staging/dosbox-staging/archive/refs/tags/v$SNAPCRAFT_PROJECT_VERSION.tar.gz
     build-packages:
       - libsdl2-dev
