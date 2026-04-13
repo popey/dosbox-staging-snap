@@ -27,7 +27,7 @@ platforms:
 
 apps:
   dosbox-staging:
-    command: bin/dosbox-launch
+    command: usr/local/bin/dosbox
     plugs: [audio-playback, home, audio-record, desktop, desktop-legacy, wayland, x11, opengl, removable-media, joystick, network, network-bind]
     extensions: [gnome]
     environment: 
@@ -83,14 +83,8 @@ parts:
       - -usr/share/doc
       - -usr/share/lintian
       - -usr/share/man
-  launcher:
-    plugin: dump
-    source: snap/local
-    organize:
-      dosbox-launch: bin/dosbox-launch
-      etc/: etc/
   cleanup:
-    after: [fluidsynth, mt, dosbox-staging, launcher]
+    after: [fluidsynth, mt, dosbox-staging]
     plugin: nil
     build-snaps: [ gnome-46-2404 ]
     override-prime: |
