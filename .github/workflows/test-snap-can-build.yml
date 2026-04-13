@@ -7,6 +7,10 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   build:
     name: 🔨 Build snap
@@ -90,8 +94,7 @@ jobs:
       - name: Output app logs
         if: always()
         run: |
-          ghvmctl exec -- cat /home/ubuntu/dosbox-staging.dosbox-staging.log 2>/dev/null || \
-          ghvmctl exec -- journalctl --user -n 50 2>/dev/null || true
+          ghvmctl exec -- cat /home/ubuntu/dosbox-staging.dosbox-staging.log 2>/dev/null || true
 
       - name: Upload screenshots
         uses: actions/upload-artifact@v4
@@ -102,15 +105,17 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-      - name: Comment on PR with results
+      - name: Comment on PR with screenshot link
         if: github.event_name == 'pull_request'
+        continue-on-error: true
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `### 🧪 Smoke test\n\n📸 Screenshots from the snap running in a VM are attached as the \`smoke-test-screenshots\` artifact on the [run](${runUrl}).`
+              body: `### 🧪 Smoke test ✅\n\nSnap launched successfully in a VM. 📸 Download the \`smoke-test-screenshots\` artifact from the [run](${runUrl}) to view screenshots.`
             });
