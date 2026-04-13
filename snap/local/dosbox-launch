@@ -1,0 +1,18 @@
+#!/bin/bash
+# Wrapper launcher for dosbox-staging snap.
+# On arm64, the dynrec JIT crashes on Asahi Linux (and likely other Linux
+# on Apple Silicon) due to W^X enforcement blocking mmap(PROT_WRITE|PROT_EXEC).
+# We ship a default config that sets core=normal on arm64 to use the
+# interpreter instead, which works correctly.
+
+ARCH=$(uname -m)
+EXTRA_ARGS=""
+
+if [ "$ARCH" = "aarch64" ]; then
+    ARM64_CONF="$SNAP/etc/dosbox-staging-arm64.conf"
+    if [ -f "$ARM64_CONF" ]; then
+        EXTRA_ARGS="--conf $ARM64_CONF"
+    fi
+fi
+
+exec "$SNAP/usr/local/bin/dosbox" $EXTRA_ARGS "$@"
