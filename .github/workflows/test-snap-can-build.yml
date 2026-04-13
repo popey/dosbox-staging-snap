@@ -9,9 +9,8 @@ on:
 
 jobs:
   build:
+    name: 🔨 Build snap
     runs-on: ubuntu-latest
-    outputs:
-      snap: ${{ steps.build.outputs.snap }}
 
     steps:
       - name: Checkout code
@@ -39,10 +38,14 @@ jobs:
           retention-days: 7
 
   smoke-test:
+    name: 💨 Smoke test (launch + screenshot)
     runs-on: ubuntu-latest
     needs: build
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Download snap artifact
         uses: actions/download-artifact@v4
         with:
@@ -54,64 +57,60 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update -q
-          sudo apt-get install -y xvfb scrot x11-utils snapd
-          sudo systemctl start snapd
-          sudo snap wait system seed.loaded
+      - name: Setup LXD
+        uses: canonical/setup-lxd@v0.1.1
 
-      - name: Install snap
+      - name: Setup ghvmctl
+        run: |
+          sudo snap install ghvmctl
+          sudo snap connect ghvmctl:lxd lxd:lxd
+
+      - name: Prepare VM
+        run: ghvmctl prepare
+
+      - name: Install snap into VM
         run: |
           SNAP_FILE=$(ls *.snap | head -1)
-          echo "Installing $SNAP_FILE"
-          sudo snap install --dangerous "$SNAP_FILE"
+          echo "Pushing $SNAP_FILE into VM..."
+          VM_NAME=$(ghvmctl exec -- hostname | tr -d '[:space:]')
+          lxc file push "$SNAP_FILE" "local:$VM_NAME/home/ubuntu/$SNAP_FILE"
+          ghvmctl exec -- sudo snap install --dangerous "/home/ubuntu/$SNAP_FILE"
 
-      - name: Connect interfaces
+      - name: Launch app and wait for it to render
         run: |
-          sudo snap connect dosbox-staging:audio-playback || true
-          sudo snap connect dosbox-staging:joystick || true
-          sudo snap connect dosbox-staging:opengl || true
+          ghvmctl snap-run dosbox-staging
+          sleep 30
 
-      - name: Launch app and take screenshot
+      - name: Take screenshots
         run: |
-          # Run under Xvfb - virtual framebuffer
-          Xvfb :99 -screen 0 1280x800x24 &
-          sleep 2
-          export DISPLAY=:99
+          ghvmctl screenshot-full
+          ghvmctl screenshot-window
+          ls -lh "$HOME/ghvmctl-screenshots/"
 
-          # Launch dosbox-staging in the background; it will show the config prompt or main window
-          # We pass -exit so it doesn't wait for user input (exits after running any -c commands)
-          timeout 30 snap run dosbox-staging -c "exit" || true
+      - name: Output app logs
+        if: always()
+        run: |
+          ghvmctl exec -- cat /home/ubuntu/dosbox-staging.dosbox-staging.log 2>/dev/null || \
+          ghvmctl exec -- journalctl --user -n 50 2>/dev/null || true
 
-          # Take a full screenshot of the virtual display
-          scrot -d 1 screenshot-screen.png || import -window root screenshot-screen.png || true
-
-          ls -lh screenshot-*.png || echo "No screenshots captured"
-
-      - name: Upload screenshots as artifacts
+      - name: Upload screenshots
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: smoke-test-screenshots
-          path: screenshot-*.png
+          path: ~/ghvmctl-screenshots/
+          if-no-files-found: warn
           retention-days: 14
 
-      - name: Comment screenshot on PR
-        if: github.event_name == 'pull_request' && always()
+      - name: Comment on PR with results
+        if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
-            const fs = require('fs');
-            const screenshots = fs.readdirSync('.').filter(f => f.endsWith('.png'));
-            if (screenshots.length === 0) {
-              console.log('No screenshots to post');
-              return;
-            }
             const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `### 🧪 Smoke test screenshots\n\nScreenshots captured after launching the snap. Full artifacts: [view run](${runUrl})\n\n> Note: Screenshots are attached as [workflow artifacts](${runUrl}) (download to view).`
+              body: `### 🧪 Smoke test\n\n📸 Screenshots from the snap running in a VM are attached as the \`smoke-test-screenshots\` artifact on the [run](${runUrl}).`
             });
