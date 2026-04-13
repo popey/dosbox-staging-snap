@@ -50,9 +50,19 @@ parts:
   dosbox-staging:
     after: [mt, fluidsynth]
     plugin: meson
-    meson-parameters:
-      - -Db_pie=false
-      - -Ddynamic_core=none
+    override-build: |
+      # Build args: disable PIE globally (fixes dynrec on non-x86)
+      MESON_ARGS="-Db_pie=false"
+      # On arm64, also disable dynrec JIT: Asahi Linux enforces W^X which
+      # blocks mmap(PROT_WRITE|PROT_EXEC) used by the JIT cache.
+      # The interpreted core works fine and upstream doesn't support
+      # arm64 Linux officially anyway.
+      if [ "$CRAFT_ARCH_BUILD_FOR" = "arm64" ]; then
+        MESON_ARGS="$MESON_ARGS -Ddynamic_core=none"
+      fi
+      meson setup $MESON_ARGS "$CRAFT_PART_BUILD" "$CRAFT_PART_SRC"
+      ninja -C "$CRAFT_PART_BUILD"
+      DESTDIR="$CRAFT_PART_INSTALL" ninja -C "$CRAFT_PART_BUILD" install
     source: https://github.com/dosbox-staging/dosbox-staging/archive/refs/tags/v$SNAPCRAFT_PROJECT_VERSION.tar.gz
     build-packages:
       - libsdl2-dev
