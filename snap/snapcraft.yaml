@@ -102,6 +102,8 @@ parts:
       usr/lib/*/libpulse.so.*: usr/lib/
       usr/lib/*/pulseaudio/libpulsecommon*: usr/lib/
     prime:
+      - -usr/local/share/doc
+      - -usr/local/share/man
       - -usr/share/doc
       - -usr/share/lintian
       - -usr/share/man
