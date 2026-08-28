@@ -34,24 +34,45 @@ apps:
       HOME: $SNAP_REAL_HOME
 
 parts:
+  iir:
+    source: https://github.com/berndporr/iir1.git
+    plugin: cmake
+    source-tag: "1.9.3"
+    cmake-parameters:
+      - -DCMAKE_INSTALL_PREFIX=/usr
+      - -DBUILD_TESTING=OFF
+  zlib-ng:
+    source: https://github.com/zlib-ng/zlib-ng.git
+    plugin: cmake
+    source-tag: "2.2.4"
+    cmake-parameters:
+      - -DCMAKE_INSTALL_PREFIX=/usr
+      - -DZLIB_ENABLE_TESTS=OFF
   fluidsynth:
     source: https://github.com/FluidSynth/fluidsynth.git
     plugin: cmake
     source-tag: "v2.5.3"
-    organize:
-      usr/local/lib64/lib*.so*: usr/lib/
+    cmake-parameters:
+      - -DCMAKE_INSTALL_PREFIX=/usr
   mt:
     source: https://github.com/munt/munt.git
     plugin: cmake
     source-subdir: "mt32emu"
     source-tag: "munt_2_7_0"
-    organize:
-      usr/local/lib/lib*.so*: usr/lib/
+    cmake-parameters:
+      - -DCMAKE_INSTALL_PREFIX=/usr
   dosbox-staging:
-    after: [mt, fluidsynth]
-    plugin: meson
+    after: [iir, zlib-ng, mt, fluidsynth]
+    plugin: cmake
     source: https://github.com/dosbox-staging/dosbox-staging/archive/refs/tags/v$SNAPCRAFT_PROJECT_VERSION.tar.gz
+    cmake-parameters:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DOPT_TESTS=OFF
+      - -DUSE_SYSTEM_LIBS=ON
     build-packages:
+      - libasound2-dev
+      - libasio-dev
+      - libgl1-mesa-dev
       - libsdl2-dev
       - libsdl2-image-dev
       - libopus-dev
@@ -63,6 +84,7 @@ parts:
       - pkg-config
       - meson
       - libpng-dev
+      - libspeexdsp-dev
     stage-packages:
       - libsdl2-2.0-0
       - libsdl2-image-2.0-0
@@ -71,7 +93,7 @@ parts:
       - libglu1-mesa
       - libopusfile0
       - libglut3.12
-      - fluidsynth
+      - timgm6mb-soundfont
       - libsdl2-net-2.0-0
     organize:
       usr/local/lib/*/lib*.so*: usr/lib/
