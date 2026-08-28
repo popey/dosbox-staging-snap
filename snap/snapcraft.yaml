@@ -98,10 +98,10 @@ parts:
     organize:
       usr/local/lib/*/lib*.so*: usr/lib/
       usr/local/lib/lib*.so*: usr/lib/
+      usr/local/share/dosbox-staging/resources/*: usr/local/share/dosbox-staging/
       usr/lib/*/libpulse.so.*: usr/lib/
       usr/lib/*/pulseaudio/libpulsecommon*: usr/lib/
     prime:
-      - -share
       - -usr/share/doc
       - -usr/share/lintian
       - -usr/share/man
