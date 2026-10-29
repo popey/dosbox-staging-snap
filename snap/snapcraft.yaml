@@ -24,7 +24,6 @@ base: core24
 platforms:
   amd64:
   arm64:
-  armhf:
 
 apps:
   dosbox-staging:
